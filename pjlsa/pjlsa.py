@@ -134,6 +134,11 @@ ParameterTreesRequestBuilder       = cern.lsa.domain.settings.factory.ParameterT
 ParameterTreesRequest              = cern.lsa.domain.settings.ParameterTreesRequest
 ParameterTreesRequestTreeDirection = jpype.JClass('cern.lsa.domain.settings.ParameterTreesRequest$TreeDirection')
 
+# for trim setting
+TrimRequest          = cern.lsa.domain.settings.TrimRequest
+TrimRequestBuilder   = cern.lsa.domain.settings.factory.TrimRequestBuilder
+ValueFactory         = cern.accsoft.commons.value.ValueFactory
+
 CalibrationFunctionTypes=cern.lsa.domain.optics.CalibrationFunctionTypes
 
 LHC =cern.accsoft.commons.domain.CernAccelerator.LHC
@@ -352,6 +357,43 @@ class LSAClient(object):
                    self._getRawTrimHeaders(
                             beamprocess,
                             self._buildParameterList(parameter), start, end)]
+
+  def setTrims(self, beam_process, parameters, values, description, relative=True, simulate=True):
+                
+        if type(parameters) != "<class 'jpype._jclass.java.util.LinkedList'>":
+            lsa_parameters = self._buildParameterList(parameters)
+        else:
+            lsa_parameters = parameters
+        if not type(values) in [list, tuple]:
+            values = [values]
+        assert(len(parameters) == len(values)), "Number of parameters does not \
+match the number of values, {} {}".format(len(lsa_parameters), len(values))
+
+        beamProcess = self._getBeamProcess(beam_process)
+        
+        TrimReqBuilder = TrimRequestBuilder()
+        TrimReqBuilder.setContext(beamProcess)
+        TrimReqBuilder.setDescription(description)
+        if relative:
+            TrimReqBuilder.setRelative(True)
+
+        for i, v in enumerate(values):
+            TrimReqBuilder.addValue(lsa_parameters[i], beamProcess, ValueFactory.createScalar(np.double(v)))
+        
+        if simulate:
+            print("")
+            print("Simulating :")
+            print("beam process: {}".format(beam_process))
+            print("description: {}".format(description))
+            print("relative: {}".format(relative))
+            print("Sending trims:")
+            for i, p in enumerate(parameters):
+                print("{}: {}".format(p, values[i]))
+#            print(TrimRequestBuilder)
+            return
+        else:
+            trim_response = self._trimService.trimSettings(TrimRequestBuilder.build())
+        return trim_response
 
     def getTrims(self, beamprocess, parameter, start=None, end=None, part='value'):
         parameterList = self._buildParameterList(parameter)
