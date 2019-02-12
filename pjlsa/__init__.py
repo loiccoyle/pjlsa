@@ -13,7 +13,7 @@ __cmmnbuild_deps__ = [
 try:
     from .pjlsa import *
 except ImportError:
-	print(e)
+    print(e)
     import logging
     logging.basicConfig()
     log = logging.getLogger(__name__)

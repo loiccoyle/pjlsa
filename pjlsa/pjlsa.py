@@ -358,7 +358,7 @@ class LSAClient(object):
                             beamprocess,
                             self._buildParameterList(parameter), start, end)]
 
-  def setTrims(self, beam_process, parameters, values, description, relative=True, simulate=True):
+    def setTrims(self, beam_process, parameters, values, description, relative=True, simulate=True):
                 
         if type(parameters) != "<class 'jpype._jclass.java.util.LinkedList'>":
             lsa_parameters = self._buildParameterList(parameters)
